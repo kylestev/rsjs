@@ -1,5 +1,29 @@
 var fs = require('fs');
+var https = require('https');
 var esprima = require('esprima');
+
+var forceRedownload = true;
+
+function downloadBootstrap(callback) {
+	var bsDest = './Bootstrap.js';
+	fs.exists(bsDest, function (bsExists) {
+		if (!forceRedownload && bsExists) {
+			callback(bsDest);
+			return;
+		}
+
+		var bsFile = fs.createWriteStream(bsDest);
+		var request = https.get('https://world17.runescape.com/html5/client/Bootstrap.js', function (response) {
+			response.pipe(bsFile);
+				bsFile.on('finish', function() {
+				bsFile.close(function () {
+					callback(bsDest);
+				});
+		    });
+		});
+	});
+}
+
 function getProperty(node, propertyArray) {
 	for (var v in propertyArray) {
 		if (node === null || node == undefined || node[propertyArray[v]] === undefined || node[propertyArray[v]] === null) {
@@ -9,6 +33,7 @@ function getProperty(node, propertyArray) {
 	}
 	return node;
 }
+
 var newVariable = new function (variableNode) {
 	var JSVariable = function (variableNode) {
 		this.node = variableNode;
@@ -53,6 +78,7 @@ var newVariable = new function (variableNode) {
 		return new JSVariable(variableNode);
 	}
 }();
+
 var newFunction = new function (functionNode) {
 	var JSFunction = function (functionNode) {
 		this.node = functionNode;
@@ -76,6 +102,7 @@ var newFunction = new function (functionNode) {
 		return new JSFunction(functionNode);
 	}
 }();
+
 var newClass = new function (classNode) {
 	var JSClass = function (classNode) {
 		this.node = classNode;
@@ -134,6 +161,7 @@ var newClass = new function (classNode) {
 		return new JSClass(classNode);
 	}
 }();
+
 var newAnalyser = new function (ast) {
 	var Analyser = function (tree) {
 		this.classes = [];
@@ -168,6 +196,7 @@ var newAnalyser = new function (ast) {
 		return new Analyser(ast)
 	}
 }();
+
 var analyseFile = function (filePath, classSearchers) {
 	fs.readFile(filePath, function (err, data) {
 		if (err) {
@@ -181,7 +210,8 @@ var analyseFile = function (filePath, classSearchers) {
 		console.log(analyser.getIdentifiedClasses())
 	});
 }
-analyseFile("revisions\\Bootstrap29-10-2013.js", {
+
+var defs = {
 	Bootstrap          : {
 		findClass: function (analyser) {
 			analyser.getClasses().forEach(function (node) {
@@ -463,4 +493,8 @@ analyseFile("revisions\\Bootstrap29-10-2013.js", {
 			return false;
 		}
 	}
+};
+
+downloadBootstrap(function (bootstrapFile) {
+	analyseFile(bootstrapFile, defs);
 });

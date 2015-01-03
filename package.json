@@ -1,0 +1,13 @@
+{
+  "name": "rs-html5",
+  "description": "",
+  "main": "JSAnalyser.js",
+  "repository": {
+    "type": "git",
+    "url": "https://gist.github.com/kylestev/8965346898ec7c52d9ce"
+  },
+  "dependencies": {
+    "esprima": "^1.2.2"
+  },
+  "license": "MIT"
+}
